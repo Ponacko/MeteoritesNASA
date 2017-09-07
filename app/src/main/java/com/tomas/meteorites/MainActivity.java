@@ -3,6 +3,7 @@ package com.tomas.meteorites;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.widget.ListView;
+import android.widget.TextView;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -37,7 +38,8 @@ public class MainActivity extends AppCompatActivity {
                 Collections.sort(meteoriteList, new MeteoriteComparator());
                 MeteoriteAdapter adapter = new MeteoriteAdapter(getApplicationContext(), R.layout.item, meteoriteList);
                 meteorListView.setAdapter(adapter);
-
+                TextView meteorCount = (TextView)findViewById(R.id.meteorNumber);
+                meteorCount.setText("Meteorites since 2011: " + meteoriteList.size());
             }
 
             @Override

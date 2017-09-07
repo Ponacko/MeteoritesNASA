@@ -1,13 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
               android:layout_width="match_parent"
+              android:paddingLeft="20dp"
+              android:layout_margin="50dp"
               android:layout_height="match_parent">
     <TextView xmlns:android="http://schemas.android.com/apk/res/android"
               android:id="@+id/meteoriteName"
-              android:paddingLeft="20dp"
-              android:layout_margin="5dp"
-              android:gravity="center_vertical"
-              android:layout_width="match_parent"
+              android:gravity="left"
+              android:layout_width="wrap_content"
+              android:layout_height="wrap_content"
+              android:textColor="@color/colorPrimaryDark"
+              android:textSize="20sp"/>
+    <TextView xmlns:android="http://schemas.android.com/apk/res/android"
+              android:id="@+id/meteoriteMass"
+              android:layout_gravity="right"
+              android:textAlignment="gravity"
+              android:layout_width="wrap_content"
               android:layout_height="wrap_content"
               android:textColor="@color/colorPrimaryDark"
               android:textSize="20sp"/>
