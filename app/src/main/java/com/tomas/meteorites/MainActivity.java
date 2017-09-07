@@ -5,6 +5,8 @@ import android.os.Bundle;
 import android.widget.ListView;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 import retrofit2.Call;
@@ -20,7 +22,6 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         final ListView meteorListView = (ListView)findViewById(R.id.meteorList);
-        final List<Meteorite> meteoriteList = new ArrayList<>();
 
         Retrofit retrofit = new Retrofit.Builder()
                 .baseUrl("https://data.nasa.gov/resource/")
@@ -32,7 +33,9 @@ public class MainActivity extends AppCompatActivity {
         meteoriteCall.enqueue(new Callback<List<Meteorite>>() {
             @Override
             public void onResponse(Call<List<Meteorite>> call, Response<List<Meteorite>> response) {
-                MeteoriteAdapter adapter = new MeteoriteAdapter(getApplicationContext(), R.layout.item, response.body());
+                List<Meteorite> meteoriteList = response.body();
+                Collections.sort(meteoriteList, new MeteoriteComparator());
+                MeteoriteAdapter adapter = new MeteoriteAdapter(getApplicationContext(), R.layout.item, meteoriteList);
                 meteorListView.setAdapter(adapter);
 
             }

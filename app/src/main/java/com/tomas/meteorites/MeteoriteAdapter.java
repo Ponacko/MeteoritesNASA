@@ -29,7 +29,9 @@ public class MeteoriteAdapter extends ArrayAdapter<Meteorite> {
         Meteorite meteorite = getItem(position);
         if (meteorite!= null) {
             TextView text = (TextView)convertView.findViewById(R.id.meteoriteName);
+            TextView mass = (TextView)convertView.findViewById(R.id.meteoriteMass);
             text.setText(meteorite.name);
+            mass.setText(meteorite.mass);
         }
         return convertView;
     }
