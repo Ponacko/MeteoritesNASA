@@ -9,4 +9,5 @@ import android.support.annotation.NonNull;
 public class Meteorite{
     public String name;
     public String mass;
+    public String year;
 }

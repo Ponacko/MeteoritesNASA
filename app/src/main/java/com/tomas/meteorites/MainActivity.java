@@ -8,6 +8,7 @@ import android.widget.TextView;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.List;
 
 import retrofit2.Call;
@@ -34,7 +35,12 @@ public class MainActivity extends AppCompatActivity {
         meteoriteCall.enqueue(new Callback<List<Meteorite>>() {
             @Override
             public void onResponse(Call<List<Meteorite>> call, Response<List<Meteorite>> response) {
-                List<Meteorite> meteoriteList = response.body();
+                List<Meteorite> meteoriteList = new ArrayList<Meteorite>();
+                for (Meteorite meteorite : response.body()){
+                    if (meteorite.year != null && Integer.parseInt(meteorite.year.substring(0,4)) >= 2011){
+                        meteoriteList.add(meteorite);
+                    }
+                }
                 Collections.sort(meteoriteList, new MeteoriteComparator());
                 MeteoriteAdapter adapter = new MeteoriteAdapter(getApplicationContext(), R.layout.item, meteoriteList);
                 meteorListView.setAdapter(adapter);
