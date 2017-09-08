@@ -23,54 +23,45 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 
+import io.realm.RealmList;
+import io.realm.RealmResults;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
+import io.realm.Realm;
+
 public class MainActivity extends AppCompatActivity {
 
     MapView mapView;
     private GoogleMap googleMap;
     MeteoriteAdapter adapter;
+    private ListView meteorListView;
+    List<Meteorite> meteoriteList;
+    private Realm realm;
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        final ListView meteorListView = (ListView)findViewById(R.id.meteorList);
+        meteorListView = (ListView)findViewById(R.id.meteorList);
+        Realm.init(this);
+        realm = Realm.getDefaultInstance();
+        RealmResults<Meteorite> results = realm.where(Meteorite.class).findAll();
+        if (results.size() == 0){
+            UpdateData();
+            results = realm.where(Meteorite.class).findAll();
+        }
+        meteoriteList = results;
+        adapter = new MeteoriteAdapter(getApplicationContext(), R.layout.item, meteoriteList);
+        meteorListView.setAdapter(adapter);
+        TextView meteorCount = (TextView)findViewById(R.id.meteorNumber);
+        meteorCount.setText("Meteorites since 2011: " + meteoriteList.size());
 
-        Retrofit retrofit = new Retrofit.Builder()
-                .baseUrl("https://data.nasa.gov/resource/")
-                .addConverterFactory(GsonConverterFactory.create())
-                .build();
 
-        NASAService service = retrofit.create(NASAService.class);
-        Call<List<Meteorite>> meteoriteCall = service.getMeteorites("y77d-th95.json");
-        meteoriteCall.enqueue(new Callback<List<Meteorite>>() {
-            @Override
-            public void onResponse(Call<List<Meteorite>> call, Response<List<Meteorite>> response) {
-                List<Meteorite> meteoriteList = new ArrayList<Meteorite>();
-                for (Meteorite meteorite : response.body()){
-                    if (meteorite.year != null && Integer.parseInt(meteorite.year.substring(0,4)) >= 2011){
-                        meteoriteList.add(meteorite);
-                    }
-                }
-                Collections.sort(meteoriteList, new MeteoriteComparator());
-                adapter = new MeteoriteAdapter(getApplicationContext(), R.layout.item, meteoriteList);
-                meteorListView.setAdapter(adapter);
-                TextView meteorCount = (TextView)findViewById(R.id.meteorNumber);
-                meteorCount.setText("Meteorites since 2011: " + meteoriteList.size());
-            }
-
-            @Override
-            public void onFailure(Call<List<Meteorite>> call, Throwable t) {
-                int x = 5;
-            }
-
-        });
         meteorListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
@@ -102,8 +93,35 @@ public class MainActivity extends AppCompatActivity {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
 
+    public void UpdateData(){
+        Retrofit retrofit = new Retrofit.Builder()
+                .baseUrl("https://data.nasa.gov/resource/")
+                .addConverterFactory(GsonConverterFactory.create())
+                .build();
 
+        NASAService service = retrofit.create(NASAService.class);
+        Call<List<Meteorite>> meteoriteCall = service.getMeteorites("y77d-th95.json");
+        meteoriteCall.enqueue(new Callback<List<Meteorite>>() {
+            @Override
+            public void onResponse(Call<List<Meteorite>> call, Response<List<Meteorite>> response) {
+                meteoriteList = new ArrayList<Meteorite>();
+                for (Meteorite meteorite : response.body()){
+                    if (meteorite.year != null && Integer.parseInt(meteorite.year.substring(0,4)) >= 2011){
+                        meteoriteList.add(meteorite);
+                    }
+                }
+                Collections.sort(meteoriteList, new MeteoriteComparator());
+                realm.beginTransaction();
+                realm.copyToRealm(meteoriteList);
+                realm.commitTransaction();
+            }
 
+            @Override
+            public void onFailure(Call<List<Meteorite>> call, Throwable t) {
+                int x = 5;
+            }
+        });
     }
 }
