@@ -6,14 +6,21 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="com.tomas.meteorites.MainActivity">
+    tools:context="com.tomas.meteorites.MainActivity"
+    android:weightSum="1">
 
     <ListView
         android:id="@+id/meteorList"
         android:layout_width="match_parent"
-        android:layout_height="406dp"
+        android:layout_height="299dp"
         tools:layout_editor_absoluteX="8dp"
         tools:layout_editor_absoluteY="8dp"/>
+
+    <com.google.android.gms.maps.MapView
+        android:id="@+id/mapView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_weight="0.74"/>
 
     <TextView
         android:id="@+id/meteorNumber"

@@ -1,9 +1,21 @@
 package com.tomas.meteorites;
 
+import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.TextView;
+
+import com.google.android.gms.maps.CameraUpdateFactory;
+import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.MapView;
+import com.google.android.gms.maps.MapsInitializer;
+import com.google.android.gms.maps.OnMapReadyCallback;
+import com.google.android.gms.maps.model.CameraPosition;
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.MarkerOptions;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -18,6 +30,11 @@ import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
 public class MainActivity extends AppCompatActivity {
+
+    MapView mapView;
+    private GoogleMap googleMap;
+    MeteoriteAdapter adapter;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -42,7 +59,7 @@ public class MainActivity extends AppCompatActivity {
                     }
                 }
                 Collections.sort(meteoriteList, new MeteoriteComparator());
-                MeteoriteAdapter adapter = new MeteoriteAdapter(getApplicationContext(), R.layout.item, meteoriteList);
+                adapter = new MeteoriteAdapter(getApplicationContext(), R.layout.item, meteoriteList);
                 meteorListView.setAdapter(adapter);
                 TextView meteorCount = (TextView)findViewById(R.id.meteorNumber);
                 meteorCount.setText("Meteorites since 2011: " + meteoriteList.size());
@@ -54,5 +71,39 @@ public class MainActivity extends AppCompatActivity {
             }
 
         });
+        meteorListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                final Meteorite meteorite = adapter.getItem(position);
+                mapView.getMapAsync(new OnMapReadyCallback() {
+                    @Override
+                    public void onMapReady(GoogleMap mMap) {
+                        googleMap = mMap;
+
+                        // For dropping a marker at a point on the Map
+                        LatLng sydney = new LatLng(Float.parseFloat(meteorite.reclat), Float.parseFloat(meteorite.reclong));
+                        googleMap.addMarker(new MarkerOptions().position(sydney).title("Marker Title").snippet("Marker Description"));
+
+                        // For zooming automatically to the location of the marker
+                        CameraPosition cameraPosition = new CameraPosition.Builder().target(sydney).zoom(12).build();
+                        googleMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
+                    }
+                });
+            }
+        });
+
+        mapView = (MapView) findViewById(R.id.mapView);
+        mapView.onCreate(savedInstanceState);
+
+        mapView.onResume(); // needed to get the map to display immediately
+
+        try {
+            MapsInitializer.initialize(getApplicationContext());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+
+
     }
 }
