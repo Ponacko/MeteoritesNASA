@@ -1,6 +1,10 @@
 package com.tomas.meteorites;
 
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
@@ -60,13 +64,18 @@ public class MainActivity extends AppCompatActivity {
         } catch (Exception e) {
             e.printStackTrace();
         }
+        SharedPreferences sharedPref = getPreferences(Context.MODE_PRIVATE);
+        long lasUpdate = sharedPref.getLong(getString(R.string.last_update), 0);
+
 
         Realm.init(this);
         realm = Realm.getDefaultInstance();
         RealmResults<Meteorite> results = realm.where(Meteorite.class).findAll();
-        if (results.size() == 0){
+        ConnectivityManager cm =
+                (ConnectivityManager)getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
+        if (activeNetwork != null && (results.size() == 0 || System.currentTimeMillis() - lasUpdate > 3600000  * 24)){
             UpdateData();
-
         }
         else {
             meteoriteList = results;
@@ -130,6 +139,10 @@ public class MainActivity extends AppCompatActivity {
                 realm.beginTransaction();
                 realm.copyToRealm(meteoriteList);
                 realm.commitTransaction();
+                SharedPreferences sharedPref = getPreferences(Context.MODE_PRIVATE);
+                SharedPreferences.Editor editor = sharedPref.edit();
+                editor.putLong(getString(R.string.last_update), System.currentTimeMillis());
+                editor.commit();
                 adapter = new MeteoriteAdapter(getApplicationContext(), R.layout.item, meteoriteList);
                 meteorListView.setAdapter(adapter);
                 TextView meteorCount = (TextView)findViewById(R.id.meteorNumber);

@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">Meteorites</string>
+    <string name="last_update"></string>
 </resources>
