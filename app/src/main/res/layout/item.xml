@@ -2,12 +2,23 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
               android:orientation="horizontal"
               android:layout_width="match_parent"
-              android:paddingLeft="20dp"
               android:layout_margin="50dp"
               android:layout_height="match_parent">
+    <android.support.v7.widget.CardView
+        xmlns:card_view="http://schemas.android.com/apk/res-auto"
+        card_view:cardBackgroundColor="@color/cardview_light_background"
+        android:id="@+id/card_view"
+        android:layout_gravity="center"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:layout_marginBottom="5dp"
+        card_view:cardCornerRadius="10dp">
     <TextView xmlns:android="http://schemas.android.com/apk/res/android"
               android:id="@+id/meteoriteName"
               android:gravity="left"
+              android:textAlignment="gravity"
+              android:paddingTop="10dp"
+              android:paddingLeft="20dp"
               android:layout_width="wrap_content"
               android:layout_height="wrap_content"
               android:textColor="@color/colorPrimaryDark"
@@ -15,9 +26,12 @@
     <TextView xmlns:android="http://schemas.android.com/apk/res/android"
               android:id="@+id/meteoriteMass"
               android:layout_gravity="right"
+              android:paddingRight="20dp"
+              android:paddingTop="10dp"
               android:textAlignment="gravity"
               android:layout_width="wrap_content"
               android:layout_height="wrap_content"
               android:textColor="@color/colorPrimaryDark"
               android:textSize="20sp"/>
+    </android.support.v7.widget.CardView>
 </LinearLayout>
