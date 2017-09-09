@@ -47,19 +47,35 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
         meteorListView = (ListView)findViewById(R.id.meteorList);
+
+        mapView = (MapView) findViewById(R.id.mapView);
+        mapView.onCreate(savedInstanceState);
+
+        mapView.onResume(); // needed to get the map to display immediately
+
+        try {
+            MapsInitializer.initialize(getApplicationContext());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
         Realm.init(this);
         realm = Realm.getDefaultInstance();
         RealmResults<Meteorite> results = realm.where(Meteorite.class).findAll();
         if (results.size() == 0){
             UpdateData();
-            results = realm.where(Meteorite.class).findAll();
+
         }
-        meteoriteList = results;
-        adapter = new MeteoriteAdapter(getApplicationContext(), R.layout.item, meteoriteList);
-        meteorListView.setAdapter(adapter);
-        TextView meteorCount = (TextView)findViewById(R.id.meteorNumber);
-        meteorCount.setText("Meteorites since 2011: " + meteoriteList.size());
+        else {
+            meteoriteList = results;
+            adapter = new MeteoriteAdapter(getApplicationContext(), R.layout.item, meteoriteList);
+            meteorListView.setAdapter(adapter);
+            TextView meteorCount = (TextView)findViewById(R.id.meteorNumber);
+            meteorCount.setText("Meteorites since 2011: " + meteoriteList.size());
+        }
+
 
 
         meteorListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -72,27 +88,17 @@ public class MainActivity extends AppCompatActivity {
                         googleMap = mMap;
 
                         // For dropping a marker at a point on the Map
-                        LatLng sydney = new LatLng(Float.parseFloat(meteorite.reclat), Float.parseFloat(meteorite.reclong));
-                        googleMap.addMarker(new MarkerOptions().position(sydney).title("Marker Title").snippet("Marker Description"));
 
-                        // For zooming automatically to the location of the marker
-                        CameraPosition cameraPosition = new CameraPosition.Builder().target(sydney).zoom(12).build();
+                        LatLng position = new LatLng(Float.parseFloat(meteorite.reclat), Float.parseFloat(meteorite.reclong));
+                        CameraPosition cameraPosition = new CameraPosition.Builder().target(position).zoom(12).build();
+                        googleMap.addMarker(new MarkerOptions().position(position)
+                                .title(meteorite.name));
                         googleMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
                     }
                 });
             }
         });
 
-        mapView = (MapView) findViewById(R.id.mapView);
-        mapView.onCreate(savedInstanceState);
-
-        mapView.onResume(); // needed to get the map to display immediately
-
-        try {
-            MapsInitializer.initialize(getApplicationContext());
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
     }
 
     public void UpdateData(){
@@ -107,15 +113,27 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onResponse(Call<List<Meteorite>> call, Response<List<Meteorite>> response) {
                 meteoriteList = new ArrayList<Meteorite>();
-                for (Meteorite meteorite : response.body()){
-                    if (meteorite.year != null && Integer.parseInt(meteorite.year.substring(0,4)) >= 2011){
+
+                for (final Meteorite meteorite : response.body()) {
+                    if (meteorite.year != null && Integer.parseInt(meteorite.year.substring(0, 4)) >= 2011) {
                         meteoriteList.add(meteorite);
+                        mapView.getMapAsync(new OnMapReadyCallback() {
+                            @Override
+                            public void onMapReady(GoogleMap mMap) {
+                                googleMap = mMap;
+
+                            }
+                        });
                     }
                 }
                 Collections.sort(meteoriteList, new MeteoriteComparator());
                 realm.beginTransaction();
                 realm.copyToRealm(meteoriteList);
                 realm.commitTransaction();
+                adapter = new MeteoriteAdapter(getApplicationContext(), R.layout.item, meteoriteList);
+                meteorListView.setAdapter(adapter);
+                TextView meteorCount = (TextView)findViewById(R.id.meteorNumber);
+                meteorCount.setText("Meteorites since 2011: " + meteoriteList.size());
             }
 
             @Override
